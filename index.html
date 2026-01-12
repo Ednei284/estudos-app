@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulado Vunesp - Nível Fundamental</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .option-card:hover { border-color: #3b82f6; background-color: #eff6ff; }
+        .option-selected { border-color: #2563eb !important; background-color: #dbeafe !important; font-weight: bold; }
+        .correct { background-color: #dcfce7 !important; border-color: #16a34a !important; }
+        .incorrect { background-color: #fee2e2 !important; border-color: #dc2626 !important; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+
+    <div id="app" class="max-w-4xl mx-auto p-4 md:p-8">
+        <!-- Header -->
+        <header class="bg-white rounded-xl shadow-md p-6 mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-blue-800">Simulado Vunesp</h1>
+                <p class="text-gray-600 text-sm">Nível Fundamental | 30 Questões</p>
+            </div>
+            <div id="timer" class="text-xl font-mono font-bold text-red-600 bg-red-50 px-4 py-2 rounded-lg border border-red-100">
+                00:00:00
+            </div>
+        </header>
+
+        <!-- Questão Section -->
+        <div id="quiz-container" class="bg-white rounded-xl shadow-lg p-6 md:p-10 mb-6">
+            <div class="flex justify-between items-center mb-6">
+                <span id="category-tag" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold uppercase">Categoria</span>
+                <span id="question-number" class="text-gray-500 font-medium">Questão 1 de 30</span>
+            </div>
+
+            <div id="text-context" class="mb-6 p-4 bg-gray-50 rounded-lg italic text-gray-700 hidden">
+                <!-- Texto de apoio se houver -->
+            </div>
+
+            <h2 id="question-text" class="text-lg md:text-xl text-gray-800 font-semibold mb-8 leading-relaxed">
+                Carregando pergunta...
+            </h2>
+
+            <div id="options-container" class="space-y-4">
+                <!-- Alternativas aqui -->
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex justify-between items-center">
+            <button id="prev-btn" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 disabled:opacity-50 transition">Anterior</button>
+            <div class="flex gap-2" id="progress-dots">
+                <!-- Dots -->
+            </div>
+            <button id="next-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition">Próxima</button>
+        </div>
+
+        <!-- Resultados (Oculto inicialmente) -->
+        <div id="results-container" class="hidden bg-white rounded-xl shadow-lg p-10 text-center">
+            <h2 class="text-3xl font-bold text-blue-800 mb-4">Simulado Finalizado!</h2>
+            <div class="flex justify-center gap-8 my-8">
+                <div class="p-4 bg-green-50 rounded-xl border border-green-100">
+                    <p class="text-sm text-green-700 uppercase font-bold tracking-wider">Acertos</p>
+                    <p id="correct-count" class="text-4xl font-black text-green-600">0</p>
+                </div>
+                <div class="p-4 bg-red-50 rounded-xl border border-red-100">
+                    <p class="text-sm text-red-700 uppercase font-bold tracking-wider">Erros</p>
+                    <p id="wrong-count" class="text-4xl font-black text-red-600">0</p>
+                </div>
+            </div>
+            <p id="performance-msg" class="text-gray-600 mb-8 font-medium"></p>
+            <button onclick="window.location.reload()" class="px-8 py-3 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:bg-blue-700 transition">Reiniciar Simulado</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // PORTUGUES (1-10)
+            { cat: "Português", text: "De acordo com o texto abaixo, o zelador:<br><br><i>'O zelador do prédio é um homem muito atencioso. Ontem, ele ajudou a moradora do 402 a carregar as compras, agindo sempre com rapidez.'</i>", options: ["Ajuda apenas por gorjeta", "Contribui para a convivência com ações", "Carrega compras apenas do 4º andar", "Age de forma lenta"], answer: 1 },
+            { cat: "Português", text: "As palavras 'atencioso' e 'rapidez' são, respectivamente:", options: ["Substantivo e Adjetivo", "Advérbio e Substantivo", "Adjetivo e Substantivo", "Adjetivo e Advérbio"], answer: 2 },
+            { cat: "Português", text: "Assinale a alternativa com acentuação correta:", options: ["Crachá, café, armário", "Urubú, juri, fácil", "Lampada, onibus, saida", "Maracujá, bau, tênis"], answer: 0 },
+            { cat: "Português", text: "Complete: 'Preciso que ____ entregue este relatório para ____'.", options: ["você – mim", "tu – eu", "você – eu", "mim – você"], answer: 0 },
+            { cat: "Português", text: "Assinale a alternativa que preenche corretamente: 'O técnico foi ____ prefeitura solicitar a troca de lâmpadas ____ tarde.'", options: ["a – a", "à – a", "a – à", "à – à"], answer: 3 },
+            { cat: "Português", text: "Assinale a alternativa correta de regência verbal:", options: ["O pedreiro assistiu o filme", "O motorista obedeceu ao sinal", "Chegamos no local às oito", "O ajudante prefere café do que chá"], answer: 1 },
+            { cat: "Português", text: "Regência Nominal: 'O encarregado está ansioso ____ receber o material.'", options: ["com", "de", "por", "em"], answer: 2 },
+            { cat: "Português", text: "Em 'trabalhou MUITO e terminou CEDO', as palavras indicam:", options: ["Modo e Tempo", "Intensidade e Lugar", "Intensidade e Tempo", "Afirmação e Modo"], answer: 2 },
+            { cat: "Português", text: "Assinale o plural correto do substantivo:", options: ["Os cidadãos", "Os capitãos", "Os pãos", "Os escrivãos"], answer: 0 },
+            { cat: "Português", text: "Assinale a alternativa com pontuação (vírgula) correta:", options: ["O marceneiro trouxe pregos, martelo, serrote e cola.", "O marceneiro trouxe pregos martelo, serrote, e cola.", "O marceneiro, trouxe pregos martelo serrote e cola.", "O marceneiro trouxe, pregos, martelo serrote e cola."], answer: 0 },
+            
+            // MATEMÁTICA (11-20)
+            { cat: "Matemática", text: "Razão: Se a razão cimento/areia é 1 para 4 e usei 5 sacos de cimento, quanto de areia preciso?", options: ["15 sacos", "20 sacos", "25 sacos", "10 sacos"], answer: 1 },
+            { cat: "Matemática", text: "Regra de Três: Se aparo 120m² em 3 horas, quanto aparo em 5 horas?", options: ["180 m²", "200 m²", "240 m²", "150 m²"], answer: 1 },
+            { cat: "Matemática", text: "Porcentagem: Uma furadeira de R$ 300,00 teve aumento de 10%. Novo preço:", options: ["R$ 310,00", "R$ 330,00", "R$ 303,00", "R$ 360,00"], answer: 1 },
+            { cat: "Matemática", text: "Equação: 4x – 8 = 12. Qual o valor de x?", options: ["5", "4", "6", "3"], answer: 0 },
+            { cat: "Matemática", text: "Geometria: Sala de 6m por 4m. Qual o perímetro?", options: ["10 metros", "20 metros", "24 metros", "12 metros"], answer: 1 },
+            { cat: "Matemática", text: "Geometria: Área de uma parede quadrada com 3m de lado:", options: ["6 m²", "12 m²", "9 m²", "15 m²"], answer: 2 },
+            { cat: "Matemática", text: "Média Simples: Serviços de R$ 100, R$ 150, R$ 200 e R$ 150. Média:", options: ["R$ 140,00", "R$ 150,00", "R$ 160,00", "R$ 175,00"], answer: 1 },
+            { cat: "Matemática", text: "Razão: 15 chaves fenda e 10 chaves Philips. Razão Philips/Fenda:", options: ["2/3", "3/2", "1/2", "3/5"], answer: 0 },
+            { cat: "Matemática", text: "Porcentagem: Pagou R$ 90 em algo de R$ 100. Qual o desconto?", options: ["5%", "15%", "10%", "20%"], answer: 2 },
+            { cat: "Matemática", text: "Regra de Três: 2 pintores fazem em 6h. 4 pintores fazem em:", options: ["12 horas", "8 horas", "3 horas", "4 horas"], answer: 2 },
+
+            // ESPECÍFICOS (21-30)
+            { cat: "Conhecimentos Específicos", text: "Ferramenta indicada para podar pequenos galhos e flores:", options: ["Enxada", "Tesoura de poda", "Foice", "Rastelo"], answer: 1 },
+            { cat: "Conhecimentos Específicos", text: "Marcenaria: Para união permanente e resistente de madeira:", options: ["Massa corrida", "Cola branca PVA", "Fita isolante", "Silicone"], answer: 1 },
+            { cat: "Conhecimentos Específicos", text: "Alvenaria: Componentes básicos da argamassa de assentamento:", options: ["Cimento, areia e água", "Gesso e cal", "Apenas cimento e água", "Brita e areia grossa"], answer: 0 },
+            { cat: "Conhecimentos Específicos", text: "Hidráulica: Evita retorno de mau cheiro do esgoto:", options: ["Registro de gaveta", "Sifão", "Joelho 90°", "Adaptador solda"], answer: 1 },
+            { cat: "Conhecimentos Específicos", text: "Elétrica: Desliga energia em curto-circuito automaticamente:", options: ["Interruptor", "Receptáculo", "Disjuntor", "Benjamim"], answer: 2 },
+            { cat: "Conhecimentos Específicos", text: "Manutenção: Componente do Ar-condicionado que deve ser limpo mensalmente:", options: ["Compressor", "Gás refrigerante", "Filtro de ar", "Termostato"], answer: 2 },
+            { cat: "Conhecimentos Específicos", text: "Hidráulica: Usado para vedar roscas de torneiras:", options: ["Graxa", "Fita veda-rosca (teflon)", "Arame galvanizado", "Cola sapateiro"], answer: 1 },
+            { cat: "Conhecimentos Específicos", text: "Elétrica: Fio para descarregar fugas de corrente para a terra:", options: ["Fio Fase", "Fio Neutro", "Fio Terra", "Fio Positivo"], answer: 2 },
+            { cat: "Conhecimentos Específicos", text: "Jardinagem: Técnica de nutrir a terra:", options: ["Irrigação", "Adubação", "Poda", "Transplantio"], answer: 1 },
+            { cat: "Conhecimentos Específicos", text: "Segurança: EPI essencial para proteção dos olhos em serras:", options: ["Protetor auricular", "Máscara solda", "Óculos proteção", "Luvas látex"], answer: 2 }
+        ];
+
+        let currentQuestion = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+        let startTime = Date.now();
+
+        // Elementos
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsContainer = document.getElementById('results-container');
+        const qText = document.getElementById('question-text');
+        const qCat = document.getElementById('category-tag');
+        const qNum = document.getElementById('question-number');
+        const optContainer = document.getElementById('options-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        function updateTimer() {
+            const now = Date.now();
+            const diff = now - startTime;
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            document.getElementById('timer').innerText = 
+                `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            qCat.innerText = q.cat;
+            qNum.innerText = `Questão ${currentQuestion + 1} de ${questions.length}`;
+            qText.innerHTML = q.text;
+            
+            optContainer.innerHTML = '';
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('div');
+                btn.className = `option-card p-4 border-2 border-gray-200 rounded-xl cursor-pointer transition flex items-center gap-4 ${userAnswers[currentQuestion] === index ? 'option-selected' : ''}`;
+                btn.innerHTML = `
+                    <span class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500">${String.fromCharCode(65 + index)}</span>
+                    <span class="text-gray-700">${opt}</span>
+                `;
+                btn.onclick = () => selectOption(index);
+                optContainer.appendChild(btn);
+            });
+
+            prevBtn.disabled = currentQuestion === 0;
+            nextBtn.innerText = currentQuestion === questions.length - 1 ? "Finalizar" : "Próxima";
+        }
+
+        function selectOption(index) {
+            userAnswers[currentQuestion] = index;
+            loadQuestion();
+        }
+
+        function handleNext() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function handlePrev() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        }
+
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            document.getElementById('prev-btn').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+
+            let correct = 0;
+            userAnswers.forEach((ans, i) => {
+                if (ans === questions[i].answer) correct++;
+            });
+
+            document.getElementById('correct-count').innerText = correct;
+            document.getElementById('wrong-count').innerText = questions.length - correct;
+            
+            const pct = (correct / questions.length) * 100;
+            let msg = "";
+            if (pct >= 80) msg = "Excelente desempenho! Você está muito bem preparado.";
+            else if (pct >= 50) msg = "Bom resultado, mas revise os pontos onde teve dúvida.";
+            else msg = "Precisa estudar mais. Foco na teoria e refaça o simulado.";
+            
+            document.getElementById('performance-msg').innerText = msg;
+        }
+
+        nextBtn.onclick = handleNext;
+        prevBtn.onclick = handlePrev;
+
+        setInterval(updateTimer, 1000);
+        loadQuestion();
+    </script>
+</body>
+</html>
